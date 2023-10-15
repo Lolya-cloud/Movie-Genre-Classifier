@@ -1,17 +1,22 @@
 import os
 from DataProcessor import DataProcessor
+from BERT import BertPretrained
 
 script_path = os.path.abspath(__file__)
 unprocessed_data_path = "../data/unprocessed_data/imdb_movies.csv"
 processed_data_path = "../data/processed_data/processed_data.csv"
-max_data_len = 200
+tensors_path = "../data/tensors/bert_tensors.pt"
+embeddings_path = "../data/embeddings/bert_embeddings.npy"
+max_data_len = 200 # input length for bert
 
 processor = DataProcessor(script_path, unprocessed_data_path)
-# saving and loading dataset. note that tokens for bert are in list format, not tensors, so conversion is required
 # before training.
-dataset = processor.process_data_for_BERT(processed_data_path, max_data_len)
-print(dataset.head())
-# convert lists to tensors before training
-processor.convert_lists_to_tensors(dataset)
+input_ids, attention_masks = processor.process_data_for_BERT(tensors_path, max_data_len)
+tensor_dicts = [{"input_ids": id_tensor, "attention_mask": mask_tensor}
+                for id_tensor, mask_tensor in zip(input_ids, attention_masks)]
 
+bert = BertPretrained(script_path)
+# get embeddings for each text in the dataset
+embeddings = bert.get_embeddings(tensor_dicts, embeddings_path)
 
+print(embeddings.shape)
