@@ -12,6 +12,7 @@ class DataProcessor:
     def __init__(self, script_path, unprocessed_data_path):
         self.script_dir = os.path.dirname(os.path.abspath(script_path))
         self.unprocessed_data_path = os.path.join(self.script_dir, unprocessed_data_path)
+        self.dataset = 0
 
     def load_data(self, path):
         return pd.read_csv(path)
@@ -32,14 +33,15 @@ class DataProcessor:
         return dataset[['overview', 'genre']]
 
     def process_data_for_BERT(self, relative_tensor_output_path, max_len):
+        dataset = self.load_data(self.unprocessed_data_path)
+        dataset, labels = self.basic_process(dataset)
         # Check if tensor file already exists
         if os.path.exists(os.path.join(self.script_dir, relative_tensor_output_path)):
             print("Tensors found, loading")
             bert_encoded_tensors = self.load_tensors(relative_tensor_output_path)
-            return bert_encoded_tensors
+            input_ids, att_masks = bert_encoded_tensors
+            return input_ids, att_masks, labels
         print("Tensors not found, generating")
-        dataset = self.load_data(self.unprocessed_data_path)
-        dataset = self.basic_process(dataset)
         bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
         bert_encoded = dataset['overview'].apply(
@@ -51,11 +53,14 @@ class DataProcessor:
 
         self.save_tensors((input_ids, attention_masks), relative_tensor_output_path)
 
-        return input_ids, attention_masks
+        return input_ids, attention_masks, labels
 
     def basic_process(self, dataset):
         dataset = self.extract_features_dataset(dataset)
-        return dataset
+        dataset = dataset.dropna(subset=['genre'])
+        labels = dataset['genre'].values.tolist()
+        labels = [elem.replace('\xa0', ' ') for elem in labels]
+        return dataset, labels
 
     def encode_for_bert(self, tokenized_text, max_len, bert_tokenizer):
         tokens = bert_tokenizer.encode_plus(
