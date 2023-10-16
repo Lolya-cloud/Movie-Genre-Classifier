@@ -1,3 +1,4 @@
+import numpy
 import pandas as pd
 import os
 import re
@@ -35,6 +36,7 @@ class DataProcessor:
     def process_data_for_BERT(self, relative_tensor_output_path, max_len):
         dataset = self.load_data(self.unprocessed_data_path)
         dataset, labels = self.basic_process(dataset)
+        labels = numpy.array(labels)
         # Check if tensor file already exists
         if os.path.exists(os.path.join(self.script_dir, relative_tensor_output_path)):
             print("Tensors found, loading")
