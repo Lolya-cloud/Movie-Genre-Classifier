@@ -46,7 +46,7 @@ class BertPretrained:
 
         print("Embeddings generated, saving")
         self.save_embeddings(all_embeddings, relative_embedding_output_path)
-        return embeddings
+        return all_embeddings
 
     def save_embeddings(self, embeddings, relative_path):
         all_embeddings = np.vstack(embeddings)

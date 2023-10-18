@@ -61,7 +61,7 @@ class DataProcessor:
         dataset = self.extract_features_dataset(dataset)
         dataset = dataset.dropna(subset=['genre'])
         labels = dataset['genre'].values.tolist()
-        labels = [elem.replace('\xa0', ' ') for elem in labels]
+        labels = [elem.replace('\xa0', '') for elem in labels]
         return dataset, labels
 
     def encode_for_bert(self, tokenized_text, max_len, bert_tokenizer):

@@ -30,6 +30,7 @@ embeddings = bert.get_embeddings(tensor_dicts, embeddings_path)
 
 # prepare labels
 splitted_labels = [label.split(',') for label in labels]
+
 flattened_labels = []
 for x in splitted_labels:
     for y in x:
@@ -47,6 +48,8 @@ print(labels_matrix)
 
 # random state allows to always get the same split (for testing purposes)
 X_train, X_test, y_train, y_test = train_test_split(embeddings, labels_matrix, test_size=0.2, random_state=10)
+print(np.sum(y_train, axis=0))
+print(np.sum(y_test, axis=0))
 
 if torch.cuda.is_available():
     print("GPU found, will be used for training")
@@ -72,9 +75,15 @@ model = NN(input_len=X_train.shape[1], output_len=len(label_categories))
 model.to(device)
 loss_func = nn.BCELoss()
 optimizer = opt.Adam(model.parameters(), lr=0.001)
+#optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+#optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01)
+#optimizer = torch.optim.Adagrad(model.parameters(), lr=0.01) / better
+#optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) / ok
+#optimizer = torch.optim.Adadelta(model.parameters(), lr=1.0) / ok
+
 
 # Training. Note: heavily inspired by documentation and ChatGPT 4.
-epochs = 200
+epochs = 100
 for epoch in range(epochs):
     model.train()
     total_loss = 0
@@ -105,9 +114,33 @@ with torch.no_grad():
 labels = np.concatenate(labels, axis=0)
 predictions = np.concatenate(predictions, axis=0)
 
-accuracy = accuracy_score(y_true=labels, y_pred=predictions.round())
-precision = precision_score(y_true=labels, y_pred=predictions.round(), average='micro')
-recall = recall_score(y_true=labels, y_pred=predictions.round(), average='micro')
-f1 = f1_score(y_true=labels, y_pred=predictions.round(), average='micro')
+from sklearn.metrics import precision_recall_curve
+
+# Assuming y_test is your true labels data
+precision, recall, thresholds = precision_recall_curve(y_test.ravel(), predictions.ravel())
+fscore = (2 * precision * recall) / (precision + recall)
+# locate the index of the largest f score
+ix = np.argmax(fscore)
+print('Best Threshold=%f, F-Score=%.3f' % (thresholds[ix], fscore[ix]))
+
+accuracy = accuracy_score(y_true=labels, y_pred=(predictions > 0.31).astype(int))
+precision = precision_score(y_true=labels, y_pred=(predictions > 0.31).astype(int), average='micro')
+recall = recall_score(y_true=labels, y_pred=(predictions > 0.31).astype(int), average='micro')
+f1 = f1_score(y_true=labels, y_pred=(predictions > 0.31).astype(int), average='micro')
+
 
 print(f'Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1 Score: {f1}')
+
+# print inversed
+true_labels_text = mlb.inverse_transform(labels)
+predicted_labels_text = mlb.inverse_transform((predictions > 0.31).astype(int))  # Assuming you've rounded predictions to 0 or 1
+
+import pandas as pd
+
+comparison_data = {
+    "True Labels": [', '.join(labels) for labels in true_labels_text],
+    "Predicted Labels": [', '.join(labels) for labels in predicted_labels_text]
+}
+comparison_df = pd.DataFrame(comparison_data)
+print(comparison_df.head())  # Print the first few rows to check
+comparison_df.to_csv('label_comparison.csv', index=False)
