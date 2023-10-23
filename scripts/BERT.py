@@ -15,7 +15,13 @@ class BertPretrained:
         with torch.no_grad():
             result = self.model(**bert_encoded_tensors)
 
-        embedding = result.last_hidden_state.mean(dim=1)
+        # embedding = result.last_hidden_state.mean(dim=1)
+        # embedding = result.last_hidden_state.min(dim=1).values
+        # mean_pooling = result.last_hidden_state.mean(dim=1)
+        # max_pooling = result.last_hidden_state.max(dim=1).values
+        # embedding = torch.cat((mean_pooling, max_pooling), dim=1)
+        embedding = result.last_hidden_state[:, 0, :] # let's extract the cls token embedding, which
+        # represents the entire sequence of words and is great for classification tasks.
         return embedding.cpu().numpy()
 
     def get_embeddings(self, tensor_dicts, relative_embedding_output_path, batch_size=50):

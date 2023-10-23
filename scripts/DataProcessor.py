@@ -31,11 +31,14 @@ class DataProcessor:
         return torch.load(absolute_path)
 
     def extract_features_dataset(self, dataset):
-        return dataset[['overview', 'genre']]
+        dataset = dataset[['overview', 'genre']]
+        return dataset
 
     def process_data_for_BERT(self, relative_tensor_output_path, max_len):
         dataset = self.load_data(self.unprocessed_data_path)
         dataset, labels = self.basic_process(dataset)
+        # save a pointer for later debugging
+        self.dataset = dataset
         labels = numpy.array(labels)
         # Check if tensor file already exists
         if os.path.exists(os.path.join(self.script_dir, relative_tensor_output_path)):
