@@ -1,4 +1,6 @@
 import os
+import sys
+
 from DataProcessor import DataProcessor
 from BERT import BertPretrained
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -37,6 +39,7 @@ for x in splitted_labels:
     for y in x:
         flattened_labels.append(y)
 
+print(len(embeddings))
 # find unique set of labels
 label_categories = np.unique(np.array(flattened_labels))
 
