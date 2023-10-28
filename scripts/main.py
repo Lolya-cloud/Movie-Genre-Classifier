@@ -11,7 +11,7 @@ import torch.optim as opt
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 from NN import NN
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, jaccard_score, hamming_loss
 
 script_path = os.path.abspath(__file__)
 unprocessed_data_path = "../data/unprocessed_data/imdb_movies.csv"
@@ -122,6 +122,7 @@ with torch.no_grad():
 labels = np.concatenate(labels, axis=0)
 predictions = np.concatenate(predictions, axis=0)
 
+# chatgpt, to be removed
 from sklearn.metrics import precision_recall_curve
 
 # Assuming y_test is your true labels data
@@ -132,19 +133,29 @@ ix = np.argmax(fscore)
 print('Best Threshold=%f, F-Score=%.3f' % (thresholds[ix], fscore[ix]))
 
 y_pred = (predictions > 0.33).astype(int)
+# chatgpt over
+
 
 accuracy = accuracy_score(y_true=labels, y_pred=y_pred)
 precision = precision_score(y_true=labels, y_pred=y_pred, average='micro')
 recall = recall_score(y_true=labels, y_pred=y_pred, average='micro')
 f1 = f1_score(y_true=labels, y_pred=y_pred, average='micro')
 
-
-print(f'Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1 Score: {f1}')
+# note: accuracy isn't a good metric for multi-label classification, as it does not consider label subsets.
+# hence, we also use jaccard score and hamming loss.
+hamming_loss = hamming_loss(y_true=labels, y_pred=y_pred)
+hamming_acc = 1 - hamming_loss
+jaccard_score = jaccard_score(y_true=labels, y_pred=y_pred, average='micro')
+print(f'Accuracy: {accuracy}, Hamming Accuracy: {hamming_acc}, '
+      f'Jaccard Score: {jaccard_score}, Precision: {precision}, '
+      f'Recall: {recall}, F1 Score: {f1}')
 
 # print inversed
 true_labels_text = mlb.inverse_transform(labels)
 predicted_labels_text = mlb.inverse_transform(y_pred)  # Assuming you've rounded predictions to 0 or 1
 
+
+# chatgpt onwards, to be removed
 import pandas as pd
 
 comparison_data = {
