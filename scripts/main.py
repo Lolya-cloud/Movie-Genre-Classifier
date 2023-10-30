@@ -76,9 +76,10 @@ train_loader = DataLoader(train_dataset, batch_size=50, shuffle=True)
 test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 # do not shuffle for possibility of feature comparison.
 test_loader = DataLoader(test_dataset, batch_size=50, shuffle=False)
-
+print(f'input len: {X_train.shape[1]}, output len: {len(label_categories)}')
 # create the model
 model = NN(input_len=X_train.shape[1], output_len=len(label_categories))
+print(f'input len: {X_train.shape[1]}, output len: {len(label_categories)}')
 model.to(device)
 loss_func = nn.BCELoss()
 optimizer = opt.Adam(model.parameters(), lr=0.001) # perfect, slightly better than the rest.
