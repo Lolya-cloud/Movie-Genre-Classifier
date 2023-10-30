@@ -2,6 +2,7 @@ import os
 import torch.nn as nn
 import torch.optim as opt
 import pandas as pd
+from tabulate import tabulate
 from DataProcessor import DataProcessor
 from BERT import BertPretrained
 from FlexibleNeuralNetwork import FlexibleNeuralNetwork
@@ -78,3 +79,10 @@ print(metric.get_metrics())
 comparison_df = pd.DataFrame(comparison_data)
 print(comparison_df.head())  # Print the first few rows to check
 comparison_df.to_csv('label_comparison.csv', index=False)
+
+# display metrics in a table
+metrics = metric.get_metrics()
+table = [(key, value) for key, value in metrics.items()]
+headers = ['Metric', 'Value']
+
+print(tabulate(table, headers=headers, tablefmt='grid'))
