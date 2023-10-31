@@ -18,6 +18,7 @@ unprocessed_data_path = "../data/unprocessed_data/imdb_movies.csv"
 processed_data_path = "../data/processed_data/processed_data.csv"
 tensors_path = "../data/tensors/bert_tensors.pt"
 embeddings_path = "../data/embeddings/bert_embeddings.npy"
+embeddings_path_tf_idf = "../data/embeddings/tf-idf.npy"
 max_data_len = 301  # input length for bert. It was found that the largest sequence of tokens produced
 # by bert tokenizer for the dataset is 301.
 
@@ -27,6 +28,9 @@ input_ids, attention_masks, labels = processor.process_data_for_BERT(tensors_pat
 tensor_dicts = [{"input_ids": id_tensor, "attention_mask": mask_tensor}
                 for id_tensor, mask_tensor in zip(input_ids, attention_masks)]
 
+test1, test2 = processor.process_data_tf_idf(embeddings_path_tf_idf)
+print(f"shape embeddings tf-idf: {test1.shape}")
+print(test2.shape)
 bert = BertPretrained(script_path)
 # get embeddings for each text in the dataset
 embeddings = bert.get_embeddings(tensor_dicts, embeddings_path)

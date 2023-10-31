@@ -15,6 +15,7 @@ unprocessed_data_path = "../data/unprocessed_data/imdb_movies.csv"
 processed_data_path = "../data/processed_data/processed_data.csv"
 tensors_path = "../data/tensors/bert_tensors.pt"
 embeddings_path = "../data/embeddings/bert_embeddings.npy"
+embeddings_path_tf_idf = "../data/embeddings/tf-idf.npy"
 max_data_len = 301  # input length for bert. It was found that the largest sequence of tokens produced
 # by bert tokenizer for the dataset is 301.
 
@@ -28,6 +29,11 @@ bert = BertPretrained(script_path)
 # get embeddings for each text in the dataset
 embeddings = bert.get_embeddings(tensor_dicts, embeddings_path)
 overviews = processor.dataset['overview']
+# tf-idf embeddings
+tf_idf_embeddings, test2 = processor.process_data_tf_idf(embeddings_path_tf_idf)
+tf_idf_vector_len = 28346
+print(f"shape embeddings tf-idf: {tf_idf_embeddings.shape}")
+print(len(test2))
 
 # create model architecture
 input_features = 768

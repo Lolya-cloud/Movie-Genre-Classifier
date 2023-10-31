@@ -5,6 +5,7 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import BertTokenizer
 import torch
 
@@ -74,3 +75,18 @@ class DataProcessor:
         )
         # Return both input_ids and attention_mask tensors
         return tokens['input_ids'][0], tokens['attention_mask'][0]
+
+    def process_data_tf_idf(self, tf_idf_store_path):
+        dataset = self.load_data(self.unprocessed_data_path)
+        dataset, labels = self.basic_process(dataset)
+        abs_path = os.path.join(self.script_dir, tf_idf_store_path)
+        if os.path.exists(abs_path):
+            print("tf-idf-found, loading.")
+            embeddings = numpy.load(abs_path)
+            return embeddings, labels
+        print('tf-idf-not-found, generating.')
+        vectorizer = TfidfVectorizer()
+        tf_idf = vectorizer.fit_transform(dataset['overview'])
+        embeddings = tf_idf.toarray()
+        numpy.save(abs_path, embeddings)
+        return embeddings, labels
