@@ -7,3 +7,6 @@ tqdm
 scikit-learn
 matplotlib
 seaborn
+gensim
+tabulate
+sentence-transformers
