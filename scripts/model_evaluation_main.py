@@ -20,9 +20,9 @@ tensors_path = "../data/tensors/bert_tensors.pt"
 embeddings_path = "../data/embeddings/bert_embeddings.npy"
 embeddings_path_sbert = "../data/embeddings/sbert_embeddings.npy"
 embeddings_path_word2vec_google = "../data/embeddings/word2vec_google_embeddings.npy"
-bert_metric_location = "../analysis/model_comparison/bert_metrics"
-sbert_metric_location = "../analysis/model_comparison/sbert_metrics"
-w2v_metric_location = "../analysis/model_comparison/w2v_metrics"
+bert_metric_location = "../analysis/model_comparison/bert_metrics.csv"
+sbert_metric_location = "../analysis/model_comparison/sbert_metrics.csv"
+w2v_metric_location = "../analysis/model_comparison/w2v_metrics.csv"
 max_data_len = 301  # input length for bert. It was found that the largest sequence of tokens produced
 # by bert tokenizer for the dataset is 301.
 
