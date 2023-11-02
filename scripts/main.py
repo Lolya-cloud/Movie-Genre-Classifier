@@ -14,6 +14,7 @@ from NN import NN
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, jaccard_score, hamming_loss
 
 script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(os.path.abspath(script_path))
 unprocessed_data_path = "../data/unprocessed_data/imdb_movies.csv"
 processed_data_path = "../data/processed_data/processed_data.csv"
 tensors_path = "../data/tensors/bert_tensors.pt"

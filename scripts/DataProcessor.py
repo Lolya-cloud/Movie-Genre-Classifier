@@ -1,12 +1,20 @@
 import numpy
+import numpy as np
 import pandas as pd
 import os
 import re
+from gensim.models import Word2Vec
+from gensim.models import KeyedVectors
+from gensim.models import Doc2Vec
+from gensim.models.doc2vec import TaggedDocument
+import gensim.downloader as api
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim.utils import simple_preprocess
 from transformers import BertTokenizer
+from sentence_transformers import SentenceTransformer
 import torch
 
 
@@ -76,17 +84,42 @@ class DataProcessor:
         # Return both input_ids and attention_mask tensors
         return tokens['input_ids'][0], tokens['attention_mask'][0]
 
-    def process_data_tf_idf(self, tf_idf_store_path):
+    def process_word2vec_google(self, word2vec_store_path):
         dataset = self.load_data(self.unprocessed_data_path)
         dataset, labels = self.basic_process(dataset)
-        abs_path = os.path.join(self.script_dir, tf_idf_store_path)
+        abs_path = os.path.join(self.script_dir, word2vec_store_path)
         if os.path.exists(abs_path):
-            print("tf-idf-found, loading.")
+            print("word2vec found, loading.")
             embeddings = numpy.load(abs_path)
             return embeddings, labels
-        print('tf-idf-not-found, generating.')
-        vectorizer = TfidfVectorizer()
-        tf_idf = vectorizer.fit_transform(dataset['overview'])
-        embeddings = tf_idf.toarray()
-        numpy.save(abs_path, embeddings)
+        print('word2vec not found, generating.')
+        model = api.load("word2vec-google-news-300")
+
+        tokenized = [simple_preprocess(text) for text in dataset['overview']]
+
+        embeddings = []
+        for text in tokenized:
+            word_vectors = [model[word] for word in text if word in model]
+            if word_vectors:
+                embeddings.append(np.mean(word_vectors, axis=0))
+            else:
+                embeddings.append(np.zeros(model.vector_size))
+
+        embeddings = np.array(embeddings)
+        np.save(abs_path, embeddings)
         return embeddings, labels
+
+    def process_sbert(self, sbert_embeddings_store_path):
+        dataset = self.load_data(self.unprocessed_data_path)
+        dataset, labels = self.basic_process(dataset)
+        abs_path = os.path.join(self.script_dir, sbert_embeddings_store_path)
+        if os.path.exists(abs_path):
+            print("sbert embeddings found, loading.")
+            embeddings = numpy.load(abs_path)
+            return embeddings, labels
+        print("sbert embeddings not found, generating")
+        model = SentenceTransformer('all-mpnet-base-v2')
+        embeddings = np.array(model.encode(dataset['overview'].tolist()))
+        np.save(abs_path, embeddings)
+        return embeddings, labels
+
